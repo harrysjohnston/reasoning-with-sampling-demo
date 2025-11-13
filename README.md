@@ -1,21 +1,16 @@
 # Reasoning with Sampling – Dash demo suite
 
-A Plotly Dash application with twelve interactive scenes illustrates why sampling from a sharpened version of a model’s own distribution can deliver stronger reasoning traces than ordinary sampling, how this differs from low temperature sampling, and how MH power sampling approaches RL-style reasoning without additional training.
+A Plotly Dash application with seven interactive scenes illustrates why sampling from a sharpened version of a model's own distribution can deliver stronger reasoning traces than ordinary sampling, how this differs from low temperature sampling, and how MH power sampling approaches RL-style reasoning without additional training.
 
-Scenes
+## Scenes
 
-1. Distribution sharpening of a Gaussian mixture (interactive α slider)
-2. Base vs RL/GRPO likelihood histograms (unit-area)
-3. Local (low-temperature) token sharpening vs global sequence power sampling
-4. “Few strong futures vs many weak futures” toggle
-5. MH mechanics: propose/accept animation with acceptance meter
-6. MH convergence intuition (reachability + randomness cues)
-7. Likelihood histograms revisited: Base, Low-T, MH, RL
-8. α-mass concentration curve
-9. Acceptance probability heat map
-10. Token sequence gallery per strategy
-11. Diversity vs quality scatter
-12. Strategy timeline (rolling highlighting per sampler)
+1. **Distribution sharpening** – Gaussian mixture with interactive α slider showing how p(x)^α concentrates probability mass
+2. **RL-tuning sharpens the distribution** – Histogram comparing Base vs RL sequence likelihood distributions
+3. **Low-temp sampling** – Next-token PDFs showing greedy-like behavior with sharpened local probabilities
+4. **p^α sampling** – Next-token PDFs showing globally consistent path selection through power sampling
+5. **Many weak paths vs few strong paths** – Branching graph showing how sharpening prunes weak branches
+6. **Frog jumping between states** – Interactive Markov chain with editable 3×3 transition matrix, showing convergence to stationary distribution
+7. **Likelihoods revisited** – Histogram comparing Base, MH (power sampling), and RL distributions
 
 Shared visual system: base model (blue), low-temperature (orange), power/MH (magenta), RL/GRPO (green), neutral accents (gray); thin strokes, rounded tokens (monospace), minimal axes, gentle transitions.
 
