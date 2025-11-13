@@ -903,7 +903,7 @@ def create_frog_pdf_chart(counts: Sequence[int], theme: str | None = None) -> go
             tickfont=dict(color=pal["ink"]),
             showticklabels=False,
             visible=False,
-            range=[0, 0.5],
+            range=[0, 0.4],
         ),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
