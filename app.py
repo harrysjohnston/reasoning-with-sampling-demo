@@ -896,12 +896,14 @@ def create_frog_pdf_chart(counts: Sequence[int], theme: str | None = None) -> go
         showlegend=False,
         xaxis=dict(title="State", showgrid=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"])),
         yaxis=dict(
-            title="Visit frequency",
+            title="",
             showgrid=False,
             linecolor=pal["axis"],
             tickcolor=pal["ink"],
             tickfont=dict(color=pal["ink"]),
-            range=[0, 1],
+            showticklabels=False,
+            visible=False,
+            range=[0, 0.5],
         ),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -1118,10 +1120,10 @@ app.layout = html.Div(
                                                 dcc.Slider(
                                                     id="frog-speed-slider",
                                                     min=1,
-                                                    max=10,
+                                                    max=15,
                                                     step=1,
                                                     value=5,
-                                                    marks={1: "Slow", 5: "Medium", 10: "Fast"},
+                                                    marks={1: "Slow", 5: "Medium", 10: "Fast", 15: "Rapido"},
                                                     className="frog-slider",
                                                 ),
                                             ],
@@ -1330,9 +1332,13 @@ def update_branch_graph(alpha, theme: str):
     Input("frog-speed-slider", "value"),
 )
 def update_frog_interval_speed(speed):
-    """Update interval based on speed slider (1=slow, 10=fast)."""
-    # Map speed 1-10 to interval 1000ms-100ms
-    interval = 1100 - (speed * 100)
+    """Update interval based on speed slider (1=slow, 15=very fast)."""
+    # Map speed 1-15 to interval 1000ms-50ms
+    if speed <= 10:
+        interval = 1100 - (speed * 100)
+    else:
+        # For speeds 11-15, map to 100ms-50ms
+        interval = 1100 - (speed * 100)
     return interval
 
 
