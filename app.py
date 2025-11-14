@@ -138,7 +138,7 @@ def distribution_figure(alpha: float, theme: str | None = None) -> go.Figure:
             line=dict(color=pal["power"], width=3),
         )
     )
-    yaxis_config = dict(showgrid=False, zeroline=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"]))
+    yaxis_config = dict(showgrid=False, zeroline=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"]), visible=False)
     if alpha < 5:
         yaxis_config["range"] = [0, 0.8]
     fig.update_layout(
@@ -258,8 +258,8 @@ def likelihood_histogram(keys: Sequence[str], theme: str | None = None) -> go.Fi
         margin=dict(l=20, r=20, t=10, b=40),
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color=pal["ink"])),
-        xaxis=dict(title="sequence log-likelihood / length", range=[LIKELIHOOD_MIN, 0], showgrid=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"])),
-        yaxis=dict(title="density", showgrid=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"])),
+        xaxis=dict(title="sequence log-likelihood / length", range=[LIKELIHOOD_MIN, 0], showgrid=False, zeroline=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"])),
+        yaxis=dict(title="density", showgrid=False, showline=False, zeroline=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"]), visible=False),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color=pal["ink"]),
@@ -377,17 +377,17 @@ MH_SENTENCES = [
 ]
 
 # Deterministic A (acceptance ratio) and u (uniform random) values for each step
-# Step 0 (line 1) is initial state, no decision
+# Step 0 (line 1) is initial state - shows A=1, u=0 (always accept initial)
 # Steps 1-7 correspond to evaluating lines 2-8
 MH_DECISIONS = [
-    None,  # Step 0: initial state (line 1)
+    {"A": 1.0, "u": 0.0, "accept": True},     # Step 0: initial state (line 1) - always accept
     {"A": 0.28, "u": 0.45, "accept": False},  # Step 1: line 2 (reject - boring)
     {"A": 0.18, "u": 0.44, "accept": False},  # Step 2: line 3 (reject - boring)
     {"A": 0.25, "u": 0.58, "accept": False},  # Step 3: line 4 (reject - boring)
     {"A": 0.68, "u": 0.31, "accept": True},   # Step 4: line 5 (accept - middle)
     {"A": 0.22, "u": 0.51, "accept": False},  # Step 5: line 6 (reject - boring)
     {"A": 0.19, "u": 0.67, "accept": False},  # Step 6: line 7 (reject - boring)
-    {"A": 0.95, "u": 0.12, "accept": True},   # Step 7: line 8 (accept - last)
+    {"A": 0.90, "u": 0.12, "accept": True},   # Step 7: line 8 (accept - last)
 ]
 
 
@@ -416,12 +416,12 @@ def create_mh_histogram(A_val: float | None, u_val: float | None, theme: str | N
                 zeroline=False,
                 showticklabels=False,
                 visible=False,
-                range=[0, 1],
+                range=[0, 1.35],
             ),
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
             showlegend=False,
-            height=120,
+            height=200,
         )
         return fig
     
@@ -464,12 +464,12 @@ def create_mh_histogram(A_val: float | None, u_val: float | None, theme: str | N
             zeroline=False,
             showticklabels=False,
             visible=False,
-            range=[0, 1.15],
+            range=[0, 1.35],
         ),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         showlegend=False,
-        height=120,
+        height=200,
         hoverlabel=dict(bgcolor=pal["bg"], font=dict(color=pal["ink"]), bordercolor=pal["axis"]),
     )
     
@@ -553,7 +553,7 @@ def scene3_figure(
             template=None,
             margin=dict(l=20, r=20, t=10, b=40),
             xaxis=dict(title="candidate next token", showgrid=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"])),
-            yaxis=dict(title="probability", showgrid=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"])),
+            yaxis=dict(title="probability", showgrid=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"]), visible=False),
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
             font=dict(color=pal["ink"]),
@@ -595,7 +595,7 @@ def scene3_figure(
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color=pal["ink"])),
         margin=dict(l=20, r=20, t=10, b=40),
         xaxis=dict(title="candidate next token", showgrid=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"])),
-        yaxis=dict(title="probability", showgrid=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"])),
+        yaxis=dict(title="probability", showgrid=False, linecolor=pal["axis"], tickcolor=pal["ink"], tickfont=dict(color=pal["ink"]), visible=False),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color=pal["ink"]),
@@ -1119,7 +1119,7 @@ app.layout = html.Div(
                 card(
                     "scene-low-temp",
                     "Scene 03",
-                    "Low-temp sampling",
+                    "Next-token probability: low temperature",
                     None,
                     [
                         dcc.Graph(id="base-next-graph", config={"displayModeBar": False}),
@@ -1146,7 +1146,7 @@ app.layout = html.Div(
                 card(
                     "scene-global-power",
                     "Scene 04",
-                    "$p^{\\alpha}$ sampling",
+                    "Next-sequence probability: $p^{\\alpha}$",
                     None,
                     [
                         dcc.Graph(id="low-temp-next-graph", config={"displayModeBar": False}),
@@ -1358,15 +1358,15 @@ app.layout = html.Div(
             ],
         ),
         dcc.Store(id="theme-store", data="light"),
-        dcc.Interval(id="scene3-interval", interval=3200, n_intervals=0),
         dcc.Store(id="base-prefix-store", data=INITIAL_BASE_SCENE3),
         dcc.Store(id="low-prefix-store", data=INITIAL_FULL_SCENE3),
-        dcc.Store(id="scene3-playback-store", data=True),
+        dcc.Store(id="scene3-playback-store", data=False),
+        dcc.Interval(id="scene3-interval", interval=3200, n_intervals=0, disabled=True),
         dcc.Interval(id="frog-interval", interval=400, n_intervals=0, disabled=True),
         dcc.Store(id="frog-state-store", data={"current": 0, "counts": [0, 0, 0], "jumps": 0, "running": False}),
-        dcc.Interval(id="mh-interval", interval=2000, n_intervals=0, disabled=False),
+        dcc.Interval(id="mh-interval", interval=2000, n_intervals=0, disabled=True),
         dcc.Store(id="mh-state-store", data={"step": 0, "current_accepted": 0, "finished": False}),
-        dcc.Store(id="mh-playback-store", data=True),
+        dcc.Store(id="mh-playback-store", data=False),
     ]
 )
 
@@ -1691,7 +1691,7 @@ def update_mh_toggle_label(is_playing, state_data):
     """Update the play/pause button label."""
     state = state_data or {"finished": False}
     if state.get("finished", False):
-        return "Reset and Play"
+        return "Reset"
     return "Pause" if is_playing else "Play"
 
 
@@ -1811,7 +1811,7 @@ def render_mh_histogram(state_data, theme: str):
     state = state_data or {"step": 0, "current_accepted": 0}
     current_step = state.get("step", 0)
     
-    if current_step == 0 or current_step >= len(MH_DECISIONS):
+    if current_step >= len(MH_DECISIONS):
         return create_mh_histogram(None, None, theme)
     
     decision = MH_DECISIONS[current_step]
@@ -1833,7 +1833,7 @@ def render_mh_decision(state_data):
     state = state_data or {"step": 0, "current_accepted": 0}
     current_step = state.get("step", 0)
     
-    if current_step == 0 or current_step >= len(MH_DECISIONS):
+    if current_step >= len(MH_DECISIONS):
         return "—"
     
     decision = MH_DECISIONS[current_step]
@@ -1842,9 +1842,9 @@ def render_mh_decision(state_data):
     
     accept = decision["accept"]
     if accept:
-        return html.Span("✓ ACCEPT", style={"color": "#22c55e", "font-weight": "700", "font-size": "1.1rem"})
+        return html.Span("✓ ACCEPT", style={"color": "#ffffff", "font-weight": "700", "font-size": "1.1rem", "background-color": "#22c55e", "display": "block", "width": "calc(100% + 2rem)", "margin": "-0.75rem -1rem", "padding": "0.75rem 1rem", "border-radius": "8px"})
     else:
-        return html.Span("✗ REJECT", style={"color": "#dc2626", "font-weight": "700", "font-size": "1.1rem"})
+        return html.Span("✗ REJECT", style={"color": "#ffffff", "font-weight": "700", "font-size": "1.1rem", "background-color": "#dc2626", "display": "block", "width": "calc(100% + 2rem)", "margin": "-0.75rem -1rem", "padding": "0.75rem 1rem", "border-radius": "8px"})
 
 
 if __name__ == "__main__":
