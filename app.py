@@ -2,7 +2,7 @@
 
 This Dash app visualizes how exponentiating likelihoods (p(x)^alpha) affects
 sampling behavior and how this differs from classic low-temperature sampling
-and RL-tuned models. It presents six small, self-contained scenes:
+and RL-tuned models. It presents seven small, self-contained scenes:
 
 - Scene 01 — Distribution sharpening:
   Plots a 1D mixture density p(x) alongside its sharpened version p(x)^alpha,
@@ -26,7 +26,16 @@ and RL-tuned models. It presents six small, self-contained scenes:
   Network graph showing branching differences between "brown" (many weak paths)
   and "sand" (few strong paths). Sharpening prunes weak branches.
 
-- Scene 06 — Likelihoods revisited:
+- Scene 06 — MCMC frog:
+  Interactive Markov chain visualization with a frog hopping between three states.
+  Shows convergence to stationary distribution.
+
+- Scene 07 — Metropolis-Hastings:
+  Animated demonstration of the Metropolis-Hastings algorithm with deterministic
+  accept/reject decisions. Shows how MH explores sequences by accepting or rejecting
+  candidates based on acceptance ratio A and uniform random u.
+
+- Scene 08 — Likelihoods revisited:
   Histogram comparing Base, MH-style power sampling, and RL. MH samples
   from a sharpened distribution, similar to RL.
 """
@@ -345,7 +354,126 @@ SAND_FRAMES = [
     },
 ]
 
+BROWN_SEQUENCE = " ".join([frame["selected"] for frame in BROWN_FRAMES])
+SAND_SEQUENCE = " ".join([frame["selected"] for frame in SAND_FRAMES])
+
 SCENE_SEQUENCE_LENGTH = len(BROWN_FRAMES)
+
+
+# ---------- Scene 07: Metropolis-Hastings ----------
+
+# 8 sentences for MH demonstration (prefix "The quick " is fixed)
+# Reduced to 2 acceptances: middle (line 5), last (line 8)
+# Rejections are more boring/mundane
+MH_SENTENCES = [
+    " brown fox jumps over the lazy dog",  # Line 1 (initial, from BROWN_SEQUENCE)
+    " man walks to the store",  # Line 2 (candidate, reject - boring)
+    " cat sits on the mat",  # Line 3 (candidate, reject - boring)
+    " dog barks at the mailman",  # Line 4 (candidate, reject - boring)
+    " neon sign flickers through the rain",  # Line 5 (candidate, accept - middle)
+    " bird flies to the tree",  # Line 6 (candidate, reject - boring)
+    " car drives down the street",  # Line 7 (candidate, reject - boring)
+    " sand quivers as its victim succumbs to fatigue",  # Line 8 (final, accept - last)
+]
+
+# Deterministic A (acceptance ratio) and u (uniform random) values for each step
+# Step 0 (line 1) is initial state, no decision
+# Steps 1-7 correspond to evaluating lines 2-8
+MH_DECISIONS = [
+    None,  # Step 0: initial state (line 1)
+    {"A": 0.28, "u": 0.45, "accept": False},  # Step 1: line 2 (reject - boring)
+    {"A": 0.18, "u": 0.44, "accept": False},  # Step 2: line 3 (reject - boring)
+    {"A": 0.25, "u": 0.58, "accept": False},  # Step 3: line 4 (reject - boring)
+    {"A": 0.68, "u": 0.31, "accept": True},   # Step 4: line 5 (accept - middle)
+    {"A": 0.22, "u": 0.51, "accept": False},  # Step 5: line 6 (reject - boring)
+    {"A": 0.19, "u": 0.67, "accept": False},  # Step 6: line 7 (reject - boring)
+    {"A": 0.95, "u": 0.12, "accept": True},   # Step 7: line 8 (accept - last)
+]
+
+
+def create_mh_histogram(A_val: float | None, u_val: float | None, theme: str | None = None) -> go.Figure:
+    """Create a small histogram showing A and u values."""
+    pal = get_palette(theme)
+    
+    if A_val is None or u_val is None:
+        # Empty state
+        fig = go.Figure()
+        fig.update_layout(
+            template=None,
+            margin=dict(l=10, r=10, t=10, b=30),
+            xaxis=dict(
+                showgrid=False,
+                zeroline=False,
+                showticklabels=True,
+                tickvals=[0, 1],
+                ticktext=["A", "u"],
+                linecolor=pal["axis"],
+                tickcolor=pal["ink"],
+                tickfont=dict(color=pal["ink"], size=14, family="'JetBrains Mono', monospace"),
+            ),
+            yaxis=dict(
+                showgrid=False,
+                zeroline=False,
+                showticklabels=False,
+                visible=False,
+                range=[0, 1],
+            ),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            showlegend=False,
+            height=120,
+        )
+        return fig
+    
+    # Create bars for A and u
+    fig = go.Figure()
+    
+    # Color based on decision: if u < A, accept (green), else reject (red)
+    accept = u_val < A_val
+    color_A = pal["rl"] if accept else "#dc2626"
+    color_u = pal["rl"] if accept else "#dc2626"
+    
+    fig.add_trace(
+        go.Bar(
+            x=["A", "u"],
+            y=[A_val, u_val],
+            marker=dict(
+                color=[color_A, color_u],
+                line=dict(color=pal["ink"], width=1),
+            ),
+            text=[f"{A_val:.2f}", f"{u_val:.2f}"],
+            textposition="outside",
+            textfont=dict(color=pal["ink"], size=13, family="'JetBrains Mono', monospace", weight="bold"),
+            hovertemplate="%{x} = %{y:.2f}<extra></extra>",
+        )
+    )
+    
+    fig.update_layout(
+        template=None,
+        margin=dict(l=10, r=10, t=10, b=30),
+        xaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            showticklabels=True,
+            linecolor=pal["axis"],
+            tickcolor=pal["ink"],
+            tickfont=dict(color=pal["ink"], size=14, family="'JetBrains Mono', monospace"),
+        ),
+        yaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False,
+            visible=False,
+            range=[0, 1.15],
+        ),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        showlegend=False,
+        height=120,
+        hoverlabel=dict(bgcolor=pal["bg"], font=dict(color=pal["ink"]), bordercolor=pal["axis"]),
+    )
+    
+    return fig
 
 
 def get_frame_data(mode: str, frame: int) -> dict:
@@ -1160,8 +1288,69 @@ app.layout = html.Div(
                     ],
                 ),
                 card(
-                    "scene-hist-mh",
+                    "scene-mh",
                     "Scene 07",
+                    "Metropolis-Hastings",
+                    None,
+                    [
+                        html.Div(
+                            className="mh-two-column",
+                            children=[
+                                # Left column: math formulas, histogram, and decision
+                                html.Div(
+                                    className="mh-left-column",
+                                    children=[
+                                        dcc.Markdown(
+                                            r"$$A=\min\!\bigl(1,\ \frac{p(x')\,q(x_t\mid x')}{p(x_t)\,q(x'\mid x_t)}\bigr)$$",
+                                            className="mh-formula-main",
+                                            mathjax=True,
+                                        ),
+                                        dcc.Markdown(
+                                            r"$$u\sim\mathrm{Uniform}(0,1)$$",
+                                            className="mh-formula-sub",
+                                            mathjax=True,
+                                        ),
+                                        dcc.Graph(
+                                            id="mh-histogram",
+                                            config={"displayModeBar": False},
+                                            className="mh-histogram-graph",
+                                        ),
+                                        html.Div(
+                                            id="mh-decision-display",
+                                            className="mh-decision-display",
+                                            children="—",
+                                        ),
+                                    ],
+                                ),
+                                # Right column: 8-line sequence display
+                                html.Div(
+                                    className="mh-right-column",
+                                    children=[
+                                        html.Div(
+                                            id="mh-sequence-display",
+                                            className="mh-sequence-list",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                        # Playback controls
+                        html.Div(
+                            className="playback-controls",
+                            children=[
+                                html.Button(
+                                    "Pause",
+                                    id="mh-toggle-btn",
+                                    n_clicks=0,
+                                    className="playback-button toggle",
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+                card(
+                    "scene-hist-mh",
+                    "Scene 08",
                     "Likelihoods revisited",
                     None,
                     [dcc.Graph(id="mh-hist-graph", config={"displayModeBar": False})],
@@ -1175,6 +1364,9 @@ app.layout = html.Div(
         dcc.Store(id="scene3-playback-store", data=True),
         dcc.Interval(id="frog-interval", interval=400, n_intervals=0, disabled=True),
         dcc.Store(id="frog-state-store", data={"current": 0, "counts": [0, 0, 0], "jumps": 0, "running": False}),
+        dcc.Interval(id="mh-interval", interval=2000, n_intervals=0, disabled=False),
+        dcc.Store(id="mh-state-store", data={"step": 0, "current_accepted": 0, "finished": False}),
+        dcc.Store(id="mh-playback-store", data=True),
     ]
 )
 
@@ -1462,6 +1654,197 @@ def update_frog_jumps_display(state_data):
     """Update the jumps counter display."""
     jumps = state_data.get("jumps", 0) if state_data else 0
     return f"Jumps: {jumps}"
+
+
+# ---------- MH Scene Callbacks ----------
+
+@app.callback(
+    Output("mh-playback-store", "data"),
+    Input("mh-toggle-btn", "n_clicks"),
+    State("mh-playback-store", "data"),
+    prevent_initial_call=True,
+)
+def toggle_mh_playback(_n_clicks, current_state):
+    """Toggle play/pause state for MH scene."""
+    return not bool(current_state)
+
+
+@app.callback(
+    Output("mh-interval", "disabled"),
+    Input("mh-playback-store", "data"),
+    Input("mh-state-store", "data"),
+)
+def set_mh_interval_disabled(is_playing, state_data):
+    """Enable/disable interval based on playback state and finished status."""
+    state = state_data or {"finished": False}
+    if state.get("finished", False):
+        return True  # Stop interval when finished
+    return not bool(is_playing)
+
+
+@app.callback(
+    Output("mh-toggle-btn", "children"),
+    Input("mh-playback-store", "data"),
+    Input("mh-state-store", "data"),
+)
+def update_mh_toggle_label(is_playing, state_data):
+    """Update the play/pause button label."""
+    state = state_data or {"finished": False}
+    if state.get("finished", False):
+        return "Reset and Play"
+    return "Pause" if is_playing else "Play"
+
+
+@app.callback(
+    Output("mh-state-store", "data"),
+    Input("mh-interval", "n_intervals"),
+    Input("mh-toggle-btn", "n_clicks"),
+    State("mh-state-store", "data"),
+)
+def advance_mh_state(n_intervals, toggle_clicks, state_data):
+    """Advance MH state or reset/play."""
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return state_data or {"step": 0, "current_accepted": 0, "finished": False}
+    
+    triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    
+    # Handle toggle button clicks
+    if triggered_id == "mh-toggle-btn":
+        state = state_data or {"step": 0, "current_accepted": 0, "finished": False}
+        # If finished, reset and play; otherwise this is handled by playback store
+        if state.get("finished", False):
+            return {"step": 0, "current_accepted": 0, "finished": False}
+        return state
+    
+    if triggered_id == "mh-interval":
+        state = state_data or {"step": 0, "current_accepted": 0, "finished": False}
+        current_step = state.get("step", 0)
+        current_accepted = state.get("current_accepted", 0)
+        
+        # Advance to next step (0 to 7, then stop)
+        next_step = current_step + 1
+        
+        # Check if we've reached the end
+        if next_step > 7:
+            # Mark as finished and pause
+            return {"step": 7, "current_accepted": current_accepted, "finished": True}
+        
+        # Determine the new current_accepted line based on decisions
+        if next_step < len(MH_DECISIONS) and MH_DECISIONS[next_step]:
+            # Check if this step's line is accepted
+            if MH_DECISIONS[next_step]["accept"]:
+                new_accepted = next_step
+            else:
+                # Rejected, keep previous current
+                new_accepted = current_accepted
+        else:
+            new_accepted = current_accepted
+        
+        return {"step": next_step, "current_accepted": new_accepted, "finished": False}
+    
+    return state_data or {"step": 0, "current_accepted": 0, "finished": False}
+
+
+@app.callback(
+    Output("mh-sequence-display", "children"),
+    Input("mh-state-store", "data"),
+    Input("theme-store", "data"),
+)
+def render_mh_sequence(state_data, theme: str):
+    """Render the 8-line MH sequence with appropriate colors."""
+    state = state_data or {"step": 0, "current_accepted": 0}
+    current_step = state.get("step", 0)
+    current_accepted = state.get("current_accepted", 0)
+    
+    lines = []
+    
+    for idx, sentence in enumerate(MH_SENTENCES):
+        # Determine the state of this line based on the animation step
+        if idx > current_step:
+            # Future line, not yet shown
+            line_class = "mh-line mh-line-future"
+        elif idx == current_accepted:
+            # This is the current accepted line (bright green)
+            line_class = "mh-line mh-line-current"
+        elif idx <= current_step:
+            # This line has been shown and evaluated
+            if idx == 0 and current_step > 0:
+                # Initial line, no longer current (accepted past)
+                line_class = "mh-line mh-line-accepted"
+            elif idx > 0:
+                # Check the decision for this line
+                decision = MH_DECISIONS[idx] if idx < len(MH_DECISIONS) else None
+                if decision and decision["accept"]:
+                    # This line was accepted but later replaced (dim green)
+                    line_class = "mh-line mh-line-accepted"
+                else:
+                    # This line was rejected (dim red)
+                    line_class = "mh-line mh-line-rejected"
+            else:
+                # idx == 0 and current_step == 0 (initial, current)
+                line_class = "mh-line mh-line-current"
+        else:
+            # Default case
+            line_class = "mh-line"
+        
+        # Create the line with prefix and suffix
+        line = html.Div(
+            className=line_class,
+            children=[
+                html.Span("The quick ", className="mh-line-prefix"),
+                html.Span(sentence, className="mh-line-suffix"),
+            ],
+        )
+        lines.append(line)
+    
+    return lines
+
+
+@app.callback(
+    Output("mh-histogram", "figure"),
+    Input("mh-state-store", "data"),
+    Input("theme-store", "data"),
+)
+def render_mh_histogram(state_data, theme: str):
+    """Display the A and u values as a histogram."""
+    state = state_data or {"step": 0, "current_accepted": 0}
+    current_step = state.get("step", 0)
+    
+    if current_step == 0 or current_step >= len(MH_DECISIONS):
+        return create_mh_histogram(None, None, theme)
+    
+    decision = MH_DECISIONS[current_step]
+    if decision is None:
+        return create_mh_histogram(None, None, theme)
+    
+    A_val = decision["A"]
+    u_val = decision["u"]
+    
+    return create_mh_histogram(A_val, u_val, theme)
+
+
+@app.callback(
+    Output("mh-decision-display", "children"),
+    Input("mh-state-store", "data"),
+)
+def render_mh_decision(state_data):
+    """Display the accept/reject decision with emoji."""
+    state = state_data or {"step": 0, "current_accepted": 0}
+    current_step = state.get("step", 0)
+    
+    if current_step == 0 or current_step >= len(MH_DECISIONS):
+        return "—"
+    
+    decision = MH_DECISIONS[current_step]
+    if decision is None:
+        return "—"
+    
+    accept = decision["accept"]
+    if accept:
+        return html.Span("✓ ACCEPT", style={"color": "#22c55e", "font-weight": "700", "font-size": "1.1rem"})
+    else:
+        return html.Span("✗ REJECT", style={"color": "#dc2626", "font-weight": "700", "font-size": "1.1rem"})
 
 
 if __name__ == "__main__":

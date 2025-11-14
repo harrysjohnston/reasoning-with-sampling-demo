@@ -786,3 +786,215 @@ footer {
     width: auto;
   }
 }
+
+/* Metropolis-Hastings Scene (Scene 07) */
+.mh-two-column {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.mh-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.mh-right-column {
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  max-height: 360px;
+  overflow: hidden;
+}
+
+.mh-formula-main {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.mh-formula-main p {
+  margin: 0;
+}
+
+.mh-formula-sub {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.mh-formula-sub p {
+  margin: 0;
+}
+
+.mh-histogram-graph {
+  margin: 0.5rem 0;
+}
+
+.mh-decision-display {
+  font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  text-align: center;
+  padding: 0.75rem 1rem;
+  background: rgba(148, 163, 184, 0.08);
+  border-radius: 8px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mh-values-display {
+  font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  background: rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid var(--power);
+  color: var(--ink);
+  font-weight: 600;
+  white-space: pre;
+}
+
+.mh-sequence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.mh-line {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.mh-line-prefix {
+  color: var(--ink-soft);
+  opacity: 0.7;
+  white-space: pre;
+}
+
+.mh-line-suffix {
+  /* Color will be applied via state classes */
+  white-space: nowrap;
+}
+
+/* Initial/typing state - neutral */
+.mh-line {
+  color: var(--ink-soft);
+  opacity: 0.5;
+}
+
+/* Current accepted line - bright green */
+.mh-line-current .mh-line-suffix {
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.mh-line-current {
+  opacity: 1;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+/* Past accepted line - dim green */
+.mh-line-accepted .mh-line-suffix {
+  color: rgba(34, 197, 94, 0.6);
+}
+
+.mh-line-accepted {
+  opacity: 1;
+}
+
+/* Rejected line - dim red */
+.mh-line-rejected .mh-line-suffix {
+  color: rgba(220, 38, 38, 0.6);
+}
+
+.mh-line-rejected {
+  opacity: 1;
+}
+
+/* Candidate being evaluated */
+.mh-line-candidate {
+  background: rgba(217, 70, 239, 0.08);
+  border-left: 3px solid var(--power);
+  opacity: 1;
+}
+
+.mh-line-candidate .mh-line-suffix {
+  color: var(--power);
+}
+
+/* Future lines not yet shown */
+.mh-line-future {
+  opacity: 0;
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mh-values-display {
+    background: rgba(148, 163, 184, 0.15);
+  }
+
+  .mh-line-current .mh-line-suffix {
+    color: #4ade80;
+  }
+
+  .mh-line-current {
+    background: rgba(74, 222, 128, 0.12);
+  }
+
+  .mh-line-accepted .mh-line-suffix {
+    color: rgba(74, 222, 128, 0.6);
+  }
+
+  .mh-line-rejected .mh-line-suffix {
+    color: rgba(248, 113, 113, 0.6);
+  }
+
+  .mh-line-candidate {
+    background: rgba(232, 121, 249, 0.12);
+  }
+
+  .mh-line-candidate .mh-line-suffix {
+    color: var(--power);
+  }
+}
+
+/* Responsive: stack columns on mobile */
+@media (max-width: 768px) {
+  .mh-two-column {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .mh-left-column {
+    min-width: auto;
+  }
+
+  .mh-right-column {
+    min-height: 320px;
+    max-height: 320px;
+  }
+
+  .mh-sequence-list {
+    font-size: 0.85rem;
+  }
+
+  .mh-formula-main {
+    font-size: 1.2rem;
+  }
+
+  .mh-formula-sub {
+    font-size: 1rem;
+  }
+}
