@@ -199,10 +199,9 @@ def sample_likelihood(mean: float, std: float, size: int) -> np.ndarray:
 
 
 likelihood_sets = {
-    "base": sample_likelihood(-0.1, 0.1, 10000),
-    "low": sample_likelihood(-0.08, 0.05, 10000),
-    "mh": sample_likelihood(-0.08, 0.04, 10000),
-    "rl": sample_likelihood(-0.06, 0.03, 10000),
+    "base": sample_likelihood(-0.1, 0.08, 10000),
+    "mh": sample_likelihood(-0.06, 0.03, 10000),
+    "rl": sample_likelihood(-0.03, 0.015, 10000),
 }
 
 
@@ -235,7 +234,7 @@ def likelihood_histogram(keys: Sequence[str], theme: str | None = None) -> go.Fi
     fig = go.Figure()
     bin_start = LIKELIHOOD_MIN
     bin_end = LIKELIHOOD_MAX
-    num_bins = 40
+    num_bins = 100
     bin_edges = np.linspace(bin_start, bin_end, num_bins + 1)
     for key in keys:
         values = likelihood_sets[key]
@@ -367,13 +366,13 @@ SCENE_SEQUENCE_LENGTH = len(BROWN_FRAMES)
 # Rejections are more boring/mundane
 MH_SENTENCES = [
     " brown fox jumps over the lazy dog",  # Line 1 (initial, from BROWN_SEQUENCE)
-    " man walks to the store",  # Line 2 (candidate, reject - boring)
-    " cat sits on the mat",  # Line 3 (candidate, reject - boring)
-    " dog barks at the mailman",  # Line 4 (candidate, reject - boring)
-    " neon sign flickers through the rain",  # Line 5 (candidate, accept - middle)
-    " bird flies to the tree",  # Line 6 (candidate, reject - boring)
-    " car drives down the street",  # Line 7 (candidate, reject - boring)
-    " sand quivers as its victim succumbs to fatigue",  # Line 8 (final, accept - last)
+    " fix wasn't good enough",  # Line 2 (candidate, reject - boring)
+    " pace of the dentist was rather unsettling",  # Line 3 (candidate, accept - middle)
+    " answer is no",  # Line 4 (candidate, reject - boring)
+    " -silver poured from the shattered thermometer",  # Line 5 (candidate, accept - middle)
+    " bird got the slow worm",  # Line 6 (candidate, reject - boring)
+    " response was meh",  # Line 7 (candidate, reject - boring)
+    " -sand quivers as its victim succumbs to fatigue",  # Line 8 (final, accept - last)
 ]
 
 # Deterministic A (acceptance ratio) and u (uniform random) values for each step
@@ -381,13 +380,13 @@ MH_SENTENCES = [
 # Steps 1-7 correspond to evaluating lines 2-8
 MH_DECISIONS = [
     {"A": 1.0, "u": 0.0, "accept": True},     # Step 0: initial state (line 1) - always accept
-    {"A": 0.28, "u": 0.45, "accept": False},  # Step 1: line 2 (reject - boring)
-    {"A": 0.18, "u": 0.44, "accept": False},  # Step 2: line 3 (reject - boring)
+    {"A": 0.37, "u": 0.55, "accept": False},  # Step 1: line 2 (reject - boring)
+    {"A": 0.70, "u": 0.32, "accept": True},  # Step 2: line 3 (accept - middle)
     {"A": 0.25, "u": 0.58, "accept": False},  # Step 3: line 4 (reject - boring)
-    {"A": 0.68, "u": 0.31, "accept": True},   # Step 4: line 5 (accept - middle)
-    {"A": 0.22, "u": 0.51, "accept": False},  # Step 5: line 6 (reject - boring)
+    {"A": 0.75, "u": 0.41, "accept": True},   # Step 4: line 5 (accept - middle)
+    {"A": 0.45, "u": 0.61, "accept": False},  # Step 5: line 6 (reject - boring)
     {"A": 0.19, "u": 0.67, "accept": False},  # Step 6: line 7 (reject - boring)
-    {"A": 0.90, "u": 0.12, "accept": True},   # Step 7: line 8 (accept - last)
+    {"A": 0.90, "u": 0.39, "accept": True},   # Step 7: line 8 (accept - last)
 ]
 
 
